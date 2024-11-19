@@ -1,0 +1,8 @@
+[package]
+name = "tabatu"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+approx = "0.5.1"
+infinitable = "1.6.0"
