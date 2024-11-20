@@ -21,7 +21,7 @@ fn min_positive_finite(a: Infinitable<u16>, b: u16) -> u16 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TabuaBase {
     qx: Vec<f64>,
     lx: Vec<f64>,

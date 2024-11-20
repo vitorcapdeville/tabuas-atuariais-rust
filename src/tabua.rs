@@ -2,41 +2,42 @@ use crate::interface::{validar_idades_tabuas, TabuaBiometrica};
 use crate::tabua_base::TabuaBase;
 use infinitable::Infinitable;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Tabua {
     tabuas: Vec<TabuaBase>,
-    numero_decrementos: usize,
-    numero_vidas: usize,
 }
 
 impl Tabua {
+    pub fn tabuas(&self) -> &Vec<TabuaBase> {
+        return &self.tabuas;
+    }
+
     pub fn new(qx: Vec<f64>) -> Self {
         return Tabua {
             tabuas: vec![TabuaBase::new(qx)],
-            numero_decrementos: 1,
-            numero_vidas: 1,
         };
     }
 }
 
 impl TabuaBiometrica for Tabua {
     fn numero_decrementos(&self) -> usize {
-        return self.numero_decrementos;
+        return 1;
     }
+
     fn numero_vidas(&self) -> usize {
-        return self.numero_vidas;
+        return 1;
     }
+
     fn tempo_futuro_maximo(&self, x: &Vec<u16>) -> Infinitable<u16> {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return self.tabuas[0].tempo_futuro_maximo(x[0]);
     }
-    fn possui_fechamento_plato(&self) -> bool {
-        return self.tabuas[0].possui_fechamento_plato();
-    }
+
     fn qx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return self.tabuas[0].qx(x[0], t);
     }
+
     fn tpx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return self.tabuas[0].tpx(x[0], t);
