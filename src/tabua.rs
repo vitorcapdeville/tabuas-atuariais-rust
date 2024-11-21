@@ -47,7 +47,7 @@ impl TabuaBiometrica for Tabua {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use infinitable::Finite;
+    
 
     #[test]
     fn tabua_pode_ser_criada_a_partir_do_qx() {

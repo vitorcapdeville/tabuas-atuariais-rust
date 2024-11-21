@@ -1,7 +1,6 @@
 use crate::interface::{validar_idades_tabuas, TabuaBiometrica};
 use crate::Tabua;
-use infinitable::Infinitable::NegativeInfinity;
-use infinitable::{Finite, Infinitable, Infinity};
+use infinitable::Infinitable;
 
 pub enum StatusVidasConjuntas {
     First,
