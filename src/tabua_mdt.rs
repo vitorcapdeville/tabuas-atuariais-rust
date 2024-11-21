@@ -53,7 +53,7 @@ impl TabuaMDT {
         return TabuaMDT { tabuas };
     }
 
-    fn qx_j(&self, x: &Vec<u16>, t: Infinitable<u16>, j: usize) -> f64 {
+    fn qx_j(&self, x: &Vec<u16>, t: u16, j: usize) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         if j > self.numero_decrementos() {
             panic!("j não pode ser maior que o número de decrementos. j = {j}, número de decrementos = {}", self.numero_decrementos());
@@ -99,12 +99,12 @@ impl TabuaBiometrica for TabuaMDT {
             .expect("Tabua MTD deveria possuir uma ou mais tábuas.");
     }
 
-    fn qx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
+    fn qx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return (0..self.numero_decrementos()).fold(0.0, |acc, j| acc + self.qx_j(x, t, j));
     }
 
-    fn tpx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
+    fn tpx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return self
             .tabuas
@@ -214,7 +214,7 @@ mod tests {
         let tabua_mdt = TabuaMDT::new(vec![tabua1.clone(), tabua2.clone()]);
 
         let x = vec![2, 1];
-        let t = Infinitable::Finite(2);
+        let t = 2;
 
         let result = tabua_mdt.tpx(&x, t);
 
@@ -231,7 +231,7 @@ mod tests {
         let tabua_mdt = TabuaMDT::new(vec![tabua]);
 
         let x = vec![2, 1, 3];
-        let t = Infinitable::Finite(2);
+        let t = 2;
 
         tabua_mdt.tpx(&x, t);
     }
@@ -243,7 +243,7 @@ mod tests {
         let tabua_mdt = TabuaMDT::new(vec![tabua1, tabua2]);
 
         let x = vec![2, 1];
-        let t = Infinitable::Finite(2);
+        let t = 2;
 
         let qx_0 = tabua_mdt.qx_j(&x, t, 0);
         let qx_1 = tabua_mdt.qx_j(&x, t, 1);

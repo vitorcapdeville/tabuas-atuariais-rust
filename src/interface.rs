@@ -10,9 +10,9 @@ pub trait TabuaBiometrica {
     fn numero_decrementos(&self) -> usize;
     fn numero_vidas(&self) -> usize;
     fn tempo_futuro_maximo(&self, x: &Vec<u16>) -> Infinitable<u16>;
-    fn qx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64;
-    fn tpx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64;
-    fn t_qx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
+    fn qx(&self, x: &Vec<u16>, t: u16) -> f64;
+    fn tpx(&self, x: &Vec<u16>, t: u16) -> f64;
+    fn t_qx(&self, x: &Vec<u16>, t: u16) -> f64 {
         return self.qx(x, t) * self.tpx(x, t);
     }
 }

@@ -86,7 +86,7 @@ impl TabuaBase {
         return !self.w.is_finite();
     }
 
-    pub fn qx(&self, x: u16, t: Infinitable<u16>) -> f64 {
+    pub fn qx(&self, x: u16, t: u16) -> f64 {
         let limite_superior_x =
             min_positive_finite(self.tempo_futuro_maximo(0), (self.qx.len() - 1) as u16);
         let x_trunc = cmp::min(x, limite_superior_x);
@@ -95,23 +95,23 @@ impl TabuaBase {
             self.tempo_futuro_maximo(x),
             self.qx.len() as u16 - x_trunc - 1,
         );
-        let t_trunc = min_positive_finite(t, limite_superior_t);
+        let t_trunc = cmp::min(t, limite_superior_t);
         return self.qx[(x_trunc + t_trunc) as usize];
     }
 
-    pub fn tpx(&self, x: u16, t: Infinitable<u16>) -> f64 {
-        if t == Finite(0) {
+    pub fn tpx(&self, x: u16, t: u16) -> f64 {
+        if t == 0 {
             return 1.0;
         }
         let lx = self.lx(Finite(x));
-        let lxt = self.lx(Finite(x) + t);
+        let lxt = self.lx(Finite(x) + Finite(t));
         if lx == 0.0 {
             return 0.0;
         }
         return lxt / lx;
     }
 
-    pub fn t_qx(&self, x: u16, t: Infinitable<u16>) -> f64 {
+    pub fn t_qx(&self, x: u16, t: u16) -> f64 {
         return self.qx(x, t) * self.tpx(x, t);
     }
 }
@@ -153,9 +153,9 @@ mod tests {
     ) {
         let tabua = criar_tabua_completa();
 
-        assert_eq!(tabua.qx(0, Finite(10)), 1.0);
-        assert_eq!(tabua.qx(0, Finite(50)), 1.0);
-        assert_eq!(tabua.qx(0, Finite(100)), 1.0);
+        assert_eq!(tabua.qx(0, 10), 1.0);
+        assert_eq!(tabua.qx(0, 50), 1.0);
+        assert_eq!(tabua.qx(0, 100), 1.0);
     }
 
     #[test]
@@ -163,37 +163,40 @@ mod tests {
     ) {
         let tabua = criar_tabua_plato();
 
-        assert_eq!(tabua.qx(0, Finite(10)), 0.9);
-        assert_eq!(tabua.qx(0, Finite(50)), 0.9);
-        assert_eq!(tabua.qx(0, Finite(100)), 0.9);
+        assert_eq!(tabua.qx(0, 10), 0.9);
+        assert_eq!(tabua.qx(0, 50), 0.9);
+        assert_eq!(tabua.qx(0, 100), 0.9);
     }
 
     #[test]
     fn tpx_eh_igual_a_1_quando_t_for_igual_a_0_plato() {
         let tabua = criar_tabua_plato();
 
-        assert_eq!(tabua.tpx(0, Finite(0)), 1.0);
-        assert_eq!(tabua.tpx(1, Finite(0)), 1.0);
-        assert_eq!(tabua.tpx(2, Finite(0)), 1.0);
+        assert_eq!(tabua.tpx(0, 0), 1.0);
+        assert_eq!(tabua.tpx(1, 0), 1.0);
+        assert_eq!(tabua.tpx(2, 0), 1.0);
     }
 
     #[test]
     fn tpx_eh_igual_a_1_quando_t_for_igual_a_0_completo() {
         let tabua = criar_tabua_completa();
 
-        assert_eq!(tabua.tpx(0, Finite(0)), 1.0);
-        assert_eq!(tabua.tpx(1, Finite(0)), 1.0);
-        assert_eq!(tabua.tpx(2, Finite(0)), 1.0);
+        assert_eq!(tabua.tpx(0, 0), 1.0);
+        assert_eq!(tabua.tpx(1, 0), 1.0);
+        assert_eq!(tabua.tpx(2, 0), 1.0);
     }
 
     #[test]
     fn tpx_eh_igual_a_0_quando_t_for_maior_ou_igual_ao_tempo_futuro_max_e_a_tabua_completa() {
         let tabua = criar_tabua_completa();
-        let tempo_futuro_max = tabua.tempo_futuro_maximo(3);
+        let tempo_futuro_max = match tabua.tempo_futuro_maximo(3) {
+            Finite(x) => x,
+            _ => panic!("Tempo futuro maximo de uma tabua completa deveria ser finito!"),
+        };
 
-        assert_eq!(tabua.tpx(3, tempo_futuro_max + Finite(0)), 0.0);
-        assert_eq!(tabua.tpx(3, tempo_futuro_max + Finite(1)), 0.0);
-        assert_eq!(tabua.tpx(3, tempo_futuro_max + Finite(2)), 0.0);
+        assert_eq!(tabua.tpx(3, tempo_futuro_max + 0), 0.0);
+        assert_eq!(tabua.tpx(3, tempo_futuro_max + 1), 0.0);
+        assert_eq!(tabua.tpx(3, tempo_futuro_max + 2), 0.0);
     }
 
     #[test]
@@ -203,9 +206,9 @@ mod tests {
         let x = tabua.tempo_futuro_maximo(0) + Finite(1);
         match x {
             Finite(x) => {
-                assert_eq!(tabua.tpx(x, Finite(1)), 0.0);
-                assert_eq!(tabua.tpx(x, Finite(2)), 0.0);
-                assert_eq!(tabua.tpx(x, Finite(3)), 0.0);
+                assert_eq!(tabua.tpx(x, 1), 0.0);
+                assert_eq!(tabua.tpx(x, 2), 0.0);
+                assert_eq!(tabua.tpx(x, 3), 0.0);
             }
             _ => panic!("x deveria ser finito numa tabua completa"),
         }
@@ -215,7 +218,7 @@ mod tests {
     fn tpx_termina_com_zero_plato() {
         let tabua = criar_tabua_plato();
         let x = 2;
-        let t = Finite(100);
+        let t = 100;
 
         approx::assert_abs_diff_eq!(tabua.tpx(x, t), 0.0);
     }
@@ -224,7 +227,10 @@ mod tests {
     fn tpx_termina_com_zero_completa() {
         let tabua = criar_tabua_completa();
         let x = 2;
-        let t = tabua.tempo_futuro_maximo(0);
+        let t = match tabua.tempo_futuro_maximo(0) {
+            Finite(x) => x,
+            _ => panic!("Tempo futuro maximo de uma tabua completa deveria ser finito!"),
+        };
 
         assert_eq!(tabua.tpx(x, t), 0.0);
     }
@@ -234,9 +240,8 @@ mod tests {
         let tabua = criar_tabua_plato();
         let x = 2;
         let limite = 100;
-        let t = (0..=limite).map(|i| Finite(i)).collect::<Vec<_>>();
 
-        let result = t.iter().map(|&t| tabua.t_qx(x, t)).sum::<f64>();
+        let result = (0..=limite).map(|t| tabua.t_qx(x, t)).sum::<f64>();
 
         approx::assert_abs_diff_eq!(result, 1.0);
     }
@@ -249,9 +254,8 @@ mod tests {
             .tempo_futuro_maximo(x)
             .finite()
             .expect("Tempo futuro maximo de uma tabua completa deveria ser finito!");
-        let t = (0..=limite).map(|i| Finite(i)).collect::<Vec<_>>();
 
-        let result = t.iter().map(|&t| tabua.t_qx(x, t)).sum::<f64>();
+        let result = (0..=limite).map(|t| tabua.t_qx(x, t)).sum::<f64>();
 
         approx::assert_abs_diff_eq!(result, 1.0);
     }
@@ -265,9 +269,9 @@ mod tests {
             .finite()
             .expect("Tempo futuro maximo de uma tabua completa deveria ser finito!");
 
-        approx::assert_abs_diff_eq!(tabua.t_qx(x - 2, Finite(0)), 0.8);
-        approx::assert_abs_diff_eq!(tabua.t_qx(x, Finite(0)), 1.0);
-        approx::assert_abs_diff_eq!(tabua.t_qx(x + 2, Finite(0)), 1.0);
+        approx::assert_abs_diff_eq!(tabua.t_qx(x - 2, 0), 0.8);
+        approx::assert_abs_diff_eq!(tabua.t_qx(x, 0), 1.0);
+        approx::assert_abs_diff_eq!(tabua.t_qx(x + 2, 0), 1.0);
     }
 
     #[test]
@@ -280,8 +284,8 @@ mod tests {
             .expect("Tempo futuro maximo de uma tabua completa deveria ser finito!")
             + 1;
 
-        assert_eq!(tabua.t_qx(x, Finite(1)), 0.0);
-        assert_eq!(tabua.t_qx(x, Finite(2)), 0.0);
-        assert_eq!(tabua.t_qx(x, Finite(3)), 0.0);
+        assert_eq!(tabua.t_qx(x, 1), 0.0);
+        assert_eq!(tabua.t_qx(x, 2), 0.0);
+        assert_eq!(tabua.t_qx(x, 3), 0.0);
     }
 }

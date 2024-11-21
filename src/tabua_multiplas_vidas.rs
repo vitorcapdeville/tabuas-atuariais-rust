@@ -50,7 +50,7 @@ impl TabuaBiometrica for TabuaMultiplasVidas {
         return result.expect("TabuaMultiplasVidas deveria possuir uma ou mais tábuas.");
     }
 
-    fn qx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
+    fn qx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
 
         let iter = self.tabuas.iter().zip(x.iter());
@@ -68,7 +68,7 @@ impl TabuaBiometrica for TabuaMultiplasVidas {
         }
     }
 
-    fn tpx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
+    fn tpx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
 
         let iter = self.tabuas.iter().zip(x.iter());
@@ -77,15 +77,9 @@ impl TabuaBiometrica for TabuaMultiplasVidas {
             StatusVidasConjuntas::First => {
                 return iter.fold(1.0, |acc, (tabua, idade)| acc * tabua.tpx(&vec![*idade], t));
             }
-            StatusVidasConjuntas::Last => match t {
-                Finite(t) => {
-                    return (1..=t).fold(1.0, |acc, t| acc * 1.0 - self.qx(x, Finite(t - 1)));
-                }
-                Infinity => {
-                    return 0.0;
-                }
-                NegativeInfinity => panic!("t não pode ser NegativeInfinity"),
-            },
+            StatusVidasConjuntas::Last => {
+                return (1..=t).fold(1.0, |acc, t| acc * 1.0 - self.qx(x, t - 1));
+            }
         }
     }
 }
@@ -117,14 +111,13 @@ mod tests {
         );
 
         let x = vec![0, 0];
-        let t = Finite(2);
+        let t = 2;
 
         let result = tabua_multiplas_vidas.tpx(&x, t);
 
         approx::assert_relative_eq!(
             result,
-            (1.0 - tabua_multiplas_vidas.qx(&x, Finite(0)))
-                * (1.0 - tabua_multiplas_vidas.qx(&x, Finite(1)))
+            (1.0 - tabua_multiplas_vidas.qx(&x, 0)) * (1.0 - tabua_multiplas_vidas.qx(&x, 1))
         );
     }
 
@@ -137,7 +130,7 @@ mod tests {
         );
 
         let x = vec![0, 0];
-        let t = Finite(2);
+        let t = 2;
 
         let result = tabua_multiplas_vidas.qx(&x, t);
 
@@ -157,7 +150,7 @@ mod tests {
         );
 
         let x = vec![0, 0];
-        let t = Finite(2);
+        let t = 2;
 
         let result = tabua_multiplas_vidas.qx(&x, t);
 
@@ -178,7 +171,7 @@ mod tests {
         );
 
         let x = vec![0, 0, 0];
-        let t = Finite(2);
+        let t = 2;
 
         tabua_multiplas_vidas.qx(&x, t);
     }

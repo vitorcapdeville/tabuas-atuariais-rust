@@ -33,12 +33,12 @@ impl TabuaBiometrica for Tabua {
         return self.tabuas[0].tempo_futuro_maximo(x[0]);
     }
 
-    fn qx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
+    fn qx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return self.tabuas[0].qx(x[0], t);
     }
 
-    fn tpx(&self, x: &Vec<u16>, t: Infinitable<u16>) -> f64 {
+    fn tpx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return self.tabuas[0].tpx(x[0], t);
     }
@@ -61,7 +61,7 @@ mod tests {
     fn qx_da_erro_se_vetor_de_idades_tiver_mais_que_1_entrada() {
         let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
 
-        tabua.qx(&vec![0, 1], Finite(1));
+        tabua.qx(&vec![0, 1], 1);
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod tests {
     fn tpx_da_erro_se_vetor_de_idades_tiver_mais_que_1_entrada() {
         let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
 
-        tabua.tpx(&vec![0, 1], Finite(1));
+        tabua.tpx(&vec![0, 1], 1);
     }
 
     #[test]
@@ -77,7 +77,7 @@ mod tests {
     fn t_qx_da_erro_se_vetor_de_idades_tiver_mais_que_1_entrada() {
         let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
 
-        tabua.t_qx(&vec![0, 1], Finite(1));
+        tabua.t_qx(&vec![0, 1], 1);
     }
 
     #[test]
