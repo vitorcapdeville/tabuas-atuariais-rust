@@ -1,3 +1,4 @@
+use crate::Periodicidade;
 use infinitable::Infinitable;
 
 pub fn validar_idades_tabuas(x: &Vec<u16>, numero_decrementos: usize, numero_vidas: usize) {
@@ -6,7 +7,8 @@ pub fn validar_idades_tabuas(x: &Vec<u16>, numero_decrementos: usize, numero_vid
     }
 }
 
-pub trait TabuaBiometrica {
+pub trait TabuaInterface {
+    fn periodicidade(&self) -> &Periodicidade;
     fn numero_decrementos(&self) -> usize;
     fn numero_vidas(&self) -> usize;
     fn tempo_futuro_maximo(&self, x: &Vec<u16>) -> Infinitable<u16>;

@@ -1,5 +1,6 @@
-use crate::interface::{validar_idades_tabuas, TabuaBiometrica};
+use crate::interface::{validar_idades_tabuas, TabuaInterface};
 use crate::tabua_base::TabuaBase;
+use crate::Periodicidade;
 use crate::Tabua;
 use infinitable::Infinitable;
 
@@ -34,6 +35,7 @@ fn converter_mdt(qx: Vec<f64>) -> Vec<f64> {
 #[derive(Debug)]
 pub struct TabuaMDT {
     tabuas: Vec<TabuaBase>,
+    periodicidade: Periodicidade,
 }
 
 impl TabuaMDT {
@@ -45,12 +47,22 @@ impl TabuaMDT {
             panic!("Tabua MDT deve possuir no máximo três tabuas.");
         }
 
+        let periodicidade = tabuas[0].periodicidade().clone();
+
         let tabuas = tabuas
             .iter()
-            .map(|tabua| tabua.obter_tabua_base().clone())
+            .map(|tabua| {
+                if tabua.periodicidade() != &periodicidade {
+                    panic!("Todas as tabuas devem possuir a mesma periodicidade.");
+                }
+                tabua.obter_tabua_base().clone()
+            })
             .collect();
 
-        return TabuaMDT { tabuas };
+        return TabuaMDT {
+            tabuas,
+            periodicidade,
+        };
     }
 
     fn qx_j(&self, x: &Vec<u16>, t: u16, j: usize) -> f64 {
@@ -67,7 +79,7 @@ impl TabuaMDT {
     }
 }
 
-impl TabuaBiometrica for TabuaMDT {
+impl TabuaInterface for TabuaMDT {
     //TODO: Eu não gosto da validação rodando no lugar que ela tá rodando.
     // Se eu quiser calcular qualquer quantidade para um vetor de tempos, com o mesmo x,
     // eu vou ter q validar para cada tempo o x sendo que o x não mudou.
@@ -79,6 +91,9 @@ impl TabuaBiometrica for TabuaMDT {
     // fazendo o map.
     // Pera, se eu definir no trait, a versão unsafe vai precisar ficar definida lá, o que significa q se eu fizer o trait pub, ela tb vai ser pub, oh no.
     // Talvez ser pub não seja uma má ideia, se o usuário quiser usar a versão escalar unsafe ele possa mas sabendo que ele tem q controlar o tamanho de x.
+    fn periodicidade(&self) -> &Periodicidade {
+        return &self.periodicidade;
+    }
 
     fn numero_decrementos(&self) -> usize {
         return self.tabuas.len();
@@ -121,9 +136,21 @@ mod tests {
     use super::*;
     use approx;
 
+    fn criar_tabua_1dt_1() -> Tabua {
+        Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0], Periodicidade::Mensal)
+    }
+
+    fn criar_tabua_1dt_2() -> Tabua {
+        Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 1.0], Periodicidade::Mensal)
+    }
+
+    fn criar_tabua_1dt_plato() -> Tabua {
+        Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 0.8], Periodicidade::Mensal)
+    }
+
     #[test]
     fn tabua_mdt_pode_ser_criada_a_partir_de_outras_tabuas() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1dt_1();
         TabuaMDT::new(vec![tabua.clone(), tabua.clone()]);
         assert!(true)
     }
@@ -137,7 +164,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Tabua MDT deve possuir no máximo três tabuas.")]
     fn tabua_mdt_aceita_no_maximo_3_tabuas() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1dt_1();
         TabuaMDT::new(vec![
             tabua.clone(),
             tabua.clone(),
@@ -209,8 +236,8 @@ mod tests {
 
     #[test]
     fn tpx_eh_produto_do_tpx_de_cada_tabua() {
-        let tabua1 = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
-        let tabua2 = Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 1.0]);
+        let tabua1 = criar_tabua_1dt_1();
+        let tabua2 = criar_tabua_1dt_2();
         let tabua_mdt = TabuaMDT::new(vec![tabua1.clone(), tabua2.clone()]);
 
         let x = vec![2, 1];
@@ -227,7 +254,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "O vetor de idades é incompatível")]
     fn tpx_falha_quando_x_nao_tem_tamanho_correto() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1dt_1();
         let tabua_mdt = TabuaMDT::new(vec![tabua]);
 
         let x = vec![2, 1, 3];
@@ -238,8 +265,8 @@ mod tests {
 
     #[test]
     fn qx_retorna_a_soma_de_qxj() {
-        let tabua1 = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
-        let tabua2 = Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 1.0]);
+        let tabua1 = criar_tabua_1dt_1();
+        let tabua2 = criar_tabua_1dt_2();
         let tabua_mdt = TabuaMDT::new(vec![tabua1, tabua2]);
 
         let x = vec![2, 1];
@@ -254,8 +281,8 @@ mod tests {
 
     #[test]
     fn tempo_futuro_maximo_retorna_o_menor_dos_tempos_futuros_de_cada_tabua() {
-        let tabua1 = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
-        let tabua2 = Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 0.8]);
+        let tabua1 = criar_tabua_1dt_1();
+        let tabua2 = criar_tabua_1dt_plato();
         let tabua_mdt = TabuaMDT::new(vec![tabua1.clone(), tabua2.clone()]);
 
         let x = vec![2, 1];
@@ -270,7 +297,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "O vetor de idades é incompatível")]
     fn tempo_futuro_max_falha_quando_x_nao_tem_tamanho_correto() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1dt_1();
         let tabua_mdt = TabuaMDT::new(vec![tabua]);
 
         let x = vec![2, 1, 3];

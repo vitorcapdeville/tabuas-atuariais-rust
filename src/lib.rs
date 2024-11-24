@@ -1,4 +1,4 @@
-pub use crate::interface::TabuaBiometrica;
+pub use crate::interface::TabuaInterface;
 pub use crate::periodicidade::Periodicidade;
 pub use crate::periodicidade::Periodicidade::{
     Anual, Bimestral, Mensal, Quadrimestral, Semestral, Trimestral,

@@ -1,5 +1,6 @@
-use crate::interface::{validar_idades_tabuas, TabuaBiometrica};
+use crate::interface::{validar_idades_tabuas, TabuaInterface};
 use crate::tabua_base::TabuaBase;
+use crate::Periodicidade;
 use crate::Tabua;
 use infinitable::Infinitable;
 
@@ -11,23 +12,36 @@ pub enum StatusVidasConjuntas {
 pub struct TabuaMultiplasVidas {
     tabuas: Vec<TabuaBase>,
     status_vidas_conjuntas: StatusVidasConjuntas,
+    periodicidade: Periodicidade,
 }
 
 impl TabuaMultiplasVidas {
     pub fn new(tabuas: Vec<Tabua>, status_vidas_conjuntas: StatusVidasConjuntas) -> Self {
+        let periodicidade = tabuas[0].periodicidade().clone();
+
         let tabuas = tabuas
             .iter()
-            .map(|tabua| tabua.obter_tabua_base().clone())
+            .map(|tabua| {
+                if tabua.periodicidade() != &periodicidade {
+                    panic!("Todas as tabuas devem possuir a mesma periodicidade.");
+                }
+                tabua.obter_tabua_base().clone()
+            })
             .collect();
 
         return TabuaMultiplasVidas {
             tabuas,
             status_vidas_conjuntas,
+            periodicidade,
         };
     }
 }
 
-impl TabuaBiometrica for TabuaMultiplasVidas {
+impl TabuaInterface for TabuaMultiplasVidas {
+    fn periodicidade(&self) -> &Periodicidade {
+        return &self.periodicidade;
+    }
+
     fn numero_decrementos(&self) -> usize {
         return 1;
     }
@@ -94,9 +108,17 @@ mod tests {
     // qx deveria ser sempre 1.0 (probabiliade de morrer antes de completar infinitos anos é sempre um)
     // t_qx deveria ser sempre 0.0 (pois tpx é zero e qx é um)
 
+    fn criar_tabua_1_vida_1() -> Tabua {
+        Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0], Periodicidade::Mensal)
+    }
+
+    fn criar_tabua_1_vida_2() -> Tabua {
+        Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 0.8], Periodicidade::Mensal)
+    }
+
     #[test]
     fn tabua_multiplas_vidas_pode_ser_criada_a_partir_de_outras_tabuas() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1_vida_1();
         TabuaMultiplasVidas::new(
             vec![tabua.clone(), tabua.clone()],
             StatusVidasConjuntas::First,
@@ -106,7 +128,7 @@ mod tests {
 
     #[test]
     fn tpx_retorna_produto_acumulado_de_um_menos_qx_quando_status_eh_last() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1_vida_1();
         let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
             vec![tabua.clone(), tabua.clone()],
             StatusVidasConjuntas::Last,
@@ -125,7 +147,7 @@ mod tests {
 
     #[test]
     fn qx_retorna_o_produto_de_qx_de_cada_tabua_quando_status_eh_last() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1_vida_1();
         let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
             vec![tabua.clone(), tabua.clone()],
             StatusVidasConjuntas::Last,
@@ -145,7 +167,7 @@ mod tests {
 
     #[test]
     fn qx_retorna_um_menos_o_produto_de_1_menos_qx_quando_status_eh_first() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1_vida_1();
         let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
             vec![tabua.clone(), tabua.clone()],
             StatusVidasConjuntas::First,
@@ -166,7 +188,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "O vetor de idades é incompatível")]
     fn qx_falha_quando_tamanho_de_x_eh_incompativel_com_a_qntd_de_tabuas() {
-        let tabua = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
+        let tabua = criar_tabua_1_vida_1();
         let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
             vec![tabua.clone(), tabua.clone()],
             StatusVidasConjuntas::First,
@@ -180,8 +202,8 @@ mod tests {
 
     #[test]
     fn tempo_futuro_max_retorna_o_menor_dos_tempos_quando_status_eh_first() {
-        let tabua1 = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
-        let tabua2 = Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 0.8]);
+        let tabua1 = criar_tabua_1_vida_1();
+        let tabua2 = criar_tabua_1_vida_2();
         let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
             vec![tabua1.clone(), tabua2.clone()],
             StatusVidasConjuntas::First,
@@ -198,8 +220,8 @@ mod tests {
 
     #[test]
     fn tempo_futuro_max_retorna_o_maior_dos_tempos_quando_status_eh_last() {
-        let tabua1 = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
-        let tabua2 = Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 0.8]);
+        let tabua1 = criar_tabua_1_vida_1();
+        let tabua2 = criar_tabua_1_vida_2();
         let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
             vec![tabua1.clone(), tabua2.clone()],
             StatusVidasConjuntas::Last,
@@ -217,8 +239,8 @@ mod tests {
     #[test]
     #[should_panic(expected = "O vetor de idades é incompatível")]
     fn tempo_futuro_max_falha_quando_o_tamanho_de_x_eh_incompativel_com_a_qntd_de_tabuas() {
-        let tabua1 = Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0]);
-        let tabua2 = Tabua::new(vec![0.0, 0.2, 0.4, 0.7, 0.8]);
+        let tabua1 = criar_tabua_1_vida_1();
+        let tabua2 = criar_tabua_1_vida_2();
         let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
             vec![tabua1.clone(), tabua2.clone()],
             StatusVidasConjuntas::Last,
