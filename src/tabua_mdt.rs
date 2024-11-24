@@ -47,7 +47,7 @@ impl TabuaMDT {
 
         let tabuas = tabuas
             .iter()
-            .map(|tabua| tabua.tabuas()[0].clone())
+            .map(|tabua| tabua.obter_tabua_base().clone())
             .collect();
 
         return TabuaMDT { tabuas };

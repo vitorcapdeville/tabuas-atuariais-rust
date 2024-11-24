@@ -4,17 +4,17 @@ use infinitable::Infinitable;
 
 #[derive(Debug, Clone)]
 pub struct Tabua {
-    tabuas: Vec<TabuaBase>,
+    tabua: TabuaBase,
 }
 
 impl Tabua {
-    pub fn tabuas(&self) -> &Vec<TabuaBase> {
-        return &self.tabuas;
+    pub fn obter_tabua_base(&self) -> &TabuaBase {
+        return &self.tabua;
     }
 
     pub fn new(qx: Vec<f64>) -> Self {
         return Tabua {
-            tabuas: vec![TabuaBase::new(qx)],
+            tabua: TabuaBase::new(qx),
         };
     }
 }
@@ -30,24 +30,23 @@ impl TabuaBiometrica for Tabua {
 
     fn tempo_futuro_maximo(&self, x: &Vec<u16>) -> Infinitable<u16> {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
-        return self.tabuas[0].tempo_futuro_maximo(x[0]);
+        return self.tabua.tempo_futuro_maximo(x[0]);
     }
 
     fn qx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
-        return self.tabuas[0].qx(x[0], t);
+        return self.tabua.qx(x[0], t);
     }
 
     fn tpx(&self, x: &Vec<u16>, t: u16) -> f64 {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
-        return self.tabuas[0].tpx(x[0], t);
+        return self.tabua.tpx(x[0], t);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[test]
     fn tabua_pode_ser_criada_a_partir_do_qx() {

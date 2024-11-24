@@ -1,4 +1,5 @@
 use crate::interface::{validar_idades_tabuas, TabuaBiometrica};
+use crate::tabua_base::TabuaBase;
 use crate::Tabua;
 use infinitable::Infinitable;
 
@@ -8,13 +9,16 @@ pub enum StatusVidasConjuntas {
 }
 
 pub struct TabuaMultiplasVidas {
-    tabuas: Vec<Tabua>,
+    tabuas: Vec<TabuaBase>,
     status_vidas_conjuntas: StatusVidasConjuntas,
 }
 
 impl TabuaMultiplasVidas {
     pub fn new(tabuas: Vec<Tabua>, status_vidas_conjuntas: StatusVidasConjuntas) -> Self {
-        let tabuas = tabuas.iter().map(|tabua| tabua.clone()).collect();
+        let tabuas = tabuas
+            .iter()
+            .map(|tabua| tabua.obter_tabua_base().clone())
+            .collect();
 
         return TabuaMultiplasVidas {
             tabuas,
@@ -39,7 +43,7 @@ impl TabuaBiometrica for TabuaMultiplasVidas {
             .tabuas
             .iter()
             .zip(x.iter())
-            .map(|(tabua, idade)| tabua.tempo_futuro_maximo(&vec![*idade]));
+            .map(|(tabua, idade)| tabua.tempo_futuro_maximo(*idade));
 
         let result = match self.status_vidas_conjuntas {
             StatusVidasConjuntas::First => tempos.min(),
@@ -56,13 +60,12 @@ impl TabuaBiometrica for TabuaMultiplasVidas {
 
         match self.status_vidas_conjuntas {
             StatusVidasConjuntas::First => {
-                let iter_fold = iter.fold(1.0, |acc, (tabua, idade)| {
-                    acc * (1.0 - tabua.qx(&vec![*idade], t))
-                });
+                let iter_fold =
+                    iter.fold(1.0, |acc, (tabua, idade)| acc * (1.0 - tabua.qx(*idade, t)));
                 return 1.0 - iter_fold;
             }
             StatusVidasConjuntas::Last => {
-                return iter.fold(1.0, |acc, (tabua, idade)| acc * tabua.qx(&vec![*idade], t));
+                return iter.fold(1.0, |acc, (tabua, idade)| acc * tabua.qx(*idade, t));
             }
         }
     }
@@ -74,7 +77,7 @@ impl TabuaBiometrica for TabuaMultiplasVidas {
 
         match self.status_vidas_conjuntas {
             StatusVidasConjuntas::First => {
-                return iter.fold(1.0, |acc, (tabua, idade)| acc * tabua.tpx(&vec![*idade], t));
+                return iter.fold(1.0, |acc, (tabua, idade)| acc * tabua.tpx(*idade, t));
             }
             StatusVidasConjuntas::Last => {
                 return (1..=t).fold(1.0, |acc, t| acc * 1.0 - self.qx(x, t - 1));
