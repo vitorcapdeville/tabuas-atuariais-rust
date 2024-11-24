@@ -110,4 +110,15 @@ mod tests {
 
         tabua.tempo_futuro_maximo(&vec![0, 1]);
     }
+
+    #[test]
+    #[should_panic(expected = "Todas as tabuas devem possuir a mesma periodicidade.")]
+    fn extrair_tabua_base_e_periodicidade_da_erro_se_tabuas_tiverem_periodicidades_diferentes() {
+        let tabuas = vec![
+            Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0], Periodicidade::Mensal),
+            Tabua::new(vec![0.0, 0.1, 0.5, 0.8, 1.0], Periodicidade::Anual),
+        ];
+
+        extrair_tabua_base_e_periodicidade(tabuas);
+    }
 }

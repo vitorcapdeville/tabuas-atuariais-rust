@@ -18,3 +18,9 @@ pub trait TabuaInterface {
         return self.qx(x, t) * self.tpx(x, t);
     }
 }
+
+pub trait JurosInterface {
+    fn periodicidade(&self) -> &Periodicidade;
+    fn taxa_juros(&self, t: u16) -> f64;
+    fn taxa_desconto(&self, t: u16) -> f64;
+}
