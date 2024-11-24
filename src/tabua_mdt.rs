@@ -1,4 +1,5 @@
 use crate::interface::{validar_idades_tabuas, TabuaInterface};
+use crate::tabua::extrair_tabua_base_e_periodicidade;
 use crate::tabua_base::TabuaBase;
 use crate::Periodicidade;
 use crate::Tabua;
@@ -47,17 +48,7 @@ impl TabuaMDT {
             panic!("Tabua MDT deve possuir no máximo três tabuas.");
         }
 
-        let periodicidade = tabuas[0].periodicidade().clone();
-
-        let tabuas = tabuas
-            .iter()
-            .map(|tabua| {
-                if tabua.periodicidade() != &periodicidade {
-                    panic!("Todas as tabuas devem possuir a mesma periodicidade.");
-                }
-                tabua.obter_tabua_base().clone()
-            })
-            .collect();
+        let (tabuas, periodicidade) = extrair_tabua_base_e_periodicidade(tabuas);
 
         return TabuaMDT {
             tabuas,

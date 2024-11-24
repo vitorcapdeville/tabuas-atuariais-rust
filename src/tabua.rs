@@ -3,6 +3,20 @@ use crate::tabua_base::TabuaBase;
 use crate::Periodicidade;
 use infinitable::Infinitable;
 
+pub fn extrair_tabua_base_e_periodicidade(tabuas: Vec<Tabua>) -> (Vec<TabuaBase>, Periodicidade) {
+    let periodicidade = tabuas[0].periodicidade();
+    let tabuas = tabuas
+        .iter()
+        .map(|tabua| {
+            if tabua.periodicidade() != periodicidade {
+                panic!("Todas as tabuas devem possuir a mesma periodicidade.");
+            }
+            tabua.obter_tabua_base().clone()
+        })
+        .collect();
+    return (tabuas, periodicidade.clone());
+}
+
 #[derive(Debug, Clone)]
 pub struct Tabua {
     tabua: TabuaBase,
