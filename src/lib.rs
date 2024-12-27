@@ -9,6 +9,7 @@ pub use crate::tabua_mdt::TabuaMDT;
 pub use crate::tabua_multiplas_vidas::StatusVidasConjuntas::{First, Last};
 pub use crate::tabua_multiplas_vidas::{StatusVidasConjuntas, TabuaMultiplasVidas};
 
+pub mod alterar;
 pub mod interface;
 pub mod juros_constante;
 pub mod periodicidade;
