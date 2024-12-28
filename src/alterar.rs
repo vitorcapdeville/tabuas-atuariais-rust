@@ -39,12 +39,24 @@ pub fn alterar_periodicidade(
     }
 }
 
+pub fn agravar_qx(qx: Vec<f64>, fator: f64) -> Vec<f64> {
+    if fator == 0.0 {
+        return qx;
+    } else if fator < 0.0 {
+        panic!("O fator deve ser maior que ou igual a zero.");
+    }
+    return qx
+        .iter()
+        .map(|v| if *v == 1.0 { *v } else { (v * fator).min(1.0) })
+        .collect();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_aumentar_periodicidade() {
+    fn aumentar_periodicidade_funciona() {
         let qx_original = vec![0.1, 0.5, 0.7, 1.0];
         let qx_esperado = vec![
             0.18999999999999995,
@@ -62,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reduzir_periodicidade() {
+    fn reduzir_periodicidade_funciona() {
         let qx_original = vec![
             0.18999999999999995,
             0.18999999999999995,
@@ -87,7 +99,7 @@ mod tests {
     }
 
     #[test]
-    fn test_alterar_periodicidade_funciona_quando_aumenta() {
+    fn alterar_periodicidade_funciona_quando_aumenta() {
         let qx_original = vec![0.1, 0.5, 0.7, 1.0];
         let qx_esperado = vec![
             0.18999999999999995,
@@ -105,7 +117,7 @@ mod tests {
     }
 
     #[test]
-    fn test_alterar_periodicidade_funciona_quando_reduz() {
+    fn alterar_periodicidade_funciona_quando_reduz() {
         let qx_original = vec![
             0.18999999999999995,
             0.18999999999999995,
@@ -126,5 +138,37 @@ mod tests {
                 .map(|v| (v * 1000.0).round() / 1000.0)
                 .collect::<Vec<f64>>()
         );
+    }
+
+    #[test]
+    #[should_panic]
+    fn alterar_periodicidade_panic_quando_nova_periodicidade_nao_e_multiplo_da_atual() {
+        let qx_original = vec![0.1, 0.5, 0.7, 1.0];
+        alterar_periodicidade(qx_original, 2, 3);
+    }
+
+    #[test]
+    fn agravar_qx_nao_gera_qx_com_valores_acima_de_1() {
+        let qx_original = vec![0.1, 0.5, 0.7, 1.0];
+        let qx_esperado = vec![0.2, 1.0, 1.0, 1.0];
+
+        let qx_obtido = agravar_qx(qx_original, 2.0);
+        assert_eq!(qx_esperado, qx_obtido);
+    }
+
+    #[test]
+    fn agravar_qx_nao_desagrava_qx_que_sao_1() {
+        let qx_original = vec![0.1, 0.5, 0.7, 1.0];
+        let qx_esperado = vec![0.1 * 0.8, 0.5 * 0.8, 0.7 * 0.8, 1.0];
+
+        let qx_obtido = agravar_qx(qx_original, 0.8);
+        assert_eq!(qx_esperado, qx_obtido);
+    }
+
+    #[test]
+    #[should_panic]
+    fn agravar_qx_panic_quando_fator_negativo() {
+        let qx_original = vec![0.1, 0.5, 0.7, 1.0];
+        agravar_qx(qx_original, -1.0);
     }
 }
