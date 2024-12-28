@@ -1,9 +1,12 @@
+use crate::alterar::alterar_periodicidade;
 use crate::interface::{validar_idades_tabuas, TabuaInterface};
 use crate::tabua::extrair_tabua_base_e_periodicidade;
 use crate::tabua_base::TabuaBase;
 use crate::Periodicidade;
 use crate::Tabua;
 use infinitable::Infinitable;
+
+#[derive(Clone)]
 pub enum StatusVidasConjuntas {
     First,
     Last,
@@ -87,6 +90,23 @@ impl TabuaInterface for TabuaMultiplasVidas {
                 return (1..=t).fold(1.0, |acc, t| acc * 1.0 - self.qx(x, t - 1));
             }
         }
+    }
+
+    fn alterar_periodicidade(&self, nova_periodicidade: Periodicidade) -> Self {
+        let tabuas: Vec<Tabua> = self
+            .tabuas
+            .iter()
+            .map(|tabua| {
+                let qx = alterar_periodicidade(
+                    tabua.qx.clone(),
+                    self.periodicidade.quantidade_periodos_1_ano() as usize,
+                    nova_periodicidade.quantidade_periodos_1_ano() as usize,
+                );
+                return Tabua::new(qx, nova_periodicidade.clone());
+            })
+            .collect();
+
+        return TabuaMultiplasVidas::new(tabuas, self.status_vidas_conjuntas.clone());
     }
 }
 
@@ -238,5 +258,23 @@ mod tests {
 
         let x = vec![0, 0, 0];
         tabua_multiplas_vidas.tempo_futuro_maximo(&x);
+    }
+
+    #[test]
+    fn alterar_periodicidade_muda_periodicidade_da_tabua() {
+        let tabua1 = criar_tabua_1_vida_1();
+        let tabua2 = criar_tabua_1_vida_2();
+        let tabua_multiplas_vidas = TabuaMultiplasVidas::new(
+            vec![tabua1.clone(), tabua2.clone()],
+            StatusVidasConjuntas::Last,
+        );
+        assert_eq!(
+            tabua_multiplas_vidas.periodicidade(),
+            &Periodicidade::Mensal
+        );
+
+        let tabua_alterada = tabua_multiplas_vidas.alterar_periodicidade(Periodicidade::Anual);
+
+        assert_eq!(tabua_alterada.periodicidade(), &Periodicidade::Anual);
     }
 }

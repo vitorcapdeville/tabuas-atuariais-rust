@@ -1,3 +1,4 @@
+use crate::alterar::alterar_periodicidade;
 use crate::interface::{validar_idades_tabuas, TabuaInterface};
 use crate::tabua::extrair_tabua_base_e_periodicidade;
 use crate::tabua_base::TabuaBase;
@@ -117,6 +118,23 @@ impl TabuaInterface for TabuaMDT {
             .iter()
             .zip(x.iter())
             .fold(1.0, |acc, (tabua, x)| acc * tabua.tpx(*x, t));
+    }
+
+    fn alterar_periodicidade(&self, nova_periodicidade: Periodicidade) -> Self {
+        let tabuas: Vec<Tabua> = self
+            .tabuas
+            .iter()
+            .map(|tabua| {
+                let qx = alterar_periodicidade(
+                    tabua.qx.clone(),
+                    self.periodicidade.quantidade_periodos_1_ano() as usize,
+                    nova_periodicidade.quantidade_periodos_1_ano() as usize,
+                );
+                return Tabua::new(qx, nova_periodicidade.clone());
+            })
+            .collect();
+
+        return TabuaMDT::new(tabuas);
     }
 }
 
@@ -294,5 +312,18 @@ mod tests {
         let x = vec![2, 1, 3];
 
         tabua_mdt.tempo_futuro_maximo(&x);
+    }
+
+    #[test]
+    fn alterar_periodicidade_muda_periodicidade_da_tabua() {
+        let tabua1 = criar_tabua_1dt_1();
+        let tabua2 = criar_tabua_1dt_2();
+        let tabua_mdt = TabuaMDT::new(vec![tabua1.clone(), tabua2.clone()]);
+
+        assert_eq!(tabua_mdt.periodicidade(), &Periodicidade::Mensal);
+
+        let tabua_alterada = tabua_mdt.alterar_periodicidade(Periodicidade::Anual);
+
+        assert_eq!(tabua_alterada.periodicidade(), &Periodicidade::Anual);
     }
 }

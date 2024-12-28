@@ -1,3 +1,4 @@
+use crate::alterar::alterar_periodicidade;
 use crate::interface::{validar_idades_tabuas, TabuaInterface};
 use crate::tabua_base::TabuaBase;
 use crate::Periodicidade;
@@ -63,6 +64,15 @@ impl TabuaInterface for Tabua {
         validar_idades_tabuas(x, self.numero_decrementos(), self.numero_vidas());
         return self.tabua.tpx(x[0], t);
     }
+
+    fn alterar_periodicidade(&self, nova_periodicidade: Periodicidade) -> Self {
+        let qx = alterar_periodicidade(
+            self.tabua.qx.clone(),
+            self.periodicidade.quantidade_periodos_1_ano() as usize,
+            nova_periodicidade.quantidade_periodos_1_ano() as usize,
+        );
+        return Tabua::new(qx, nova_periodicidade);
+    }
 }
 
 #[cfg(test)]
@@ -120,5 +130,16 @@ mod tests {
         ];
 
         extrair_tabua_base_e_periodicidade(tabuas);
+    }
+
+    #[test]
+    fn alterar_periodicidade_muda_periodicidade_da_tabua() {
+        let tabua = criar_tabua();
+
+        assert_eq!(tabua.periodicidade(), &Periodicidade::Mensal);
+
+        let tabua_alterada = tabua.alterar_periodicidade(Periodicidade::Anual);
+
+        assert_eq!(tabua_alterada.periodicidade(), &Periodicidade::Anual);
     }
 }

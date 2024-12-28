@@ -17,6 +17,7 @@ pub trait TabuaInterface {
     fn t_qx(&self, x: &Vec<u16>, t: u16) -> f64 {
         return self.qx(x, t) * self.tpx(x, t);
     }
+    fn alterar_periodicidade(&self, nova_periodicidade: Periodicidade) -> Self;
 }
 
 pub trait JurosInterface {
