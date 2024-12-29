@@ -20,7 +20,7 @@ impl Periodicidade {
         }
     }
 
-    pub fn quantidade_periodos_1_periodicidade(&self, periodicidade: Self) -> f32 {
+    pub fn quantidade_periodos_1_periodicidade(&self, periodicidade: &Self) -> f32 {
         return self.quantidade_periodos_1_ano() as f32
             / periodicidade.quantidade_periodos_1_ano() as f32;
     }
@@ -57,27 +57,28 @@ mod test {
     #[test]
     fn quantidade_periodos_1_periodicidade() {
         assert_eq!(
-            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(Periodicidade::Mensal),
+            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(&Periodicidade::Mensal),
             1.0
         );
         assert_eq!(
-            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(Periodicidade::Bimestral),
+            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(&Periodicidade::Bimestral),
             2.0
         );
         assert_eq!(
-            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(Periodicidade::Trimestral),
+            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(&Periodicidade::Trimestral),
             3.0
         );
         assert_eq!(
-            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(Periodicidade::Quadrimestral),
+            Periodicidade::Mensal
+                .quantidade_periodos_1_periodicidade(&Periodicidade::Quadrimestral),
             4.0
         );
         assert_eq!(
-            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(Periodicidade::Semestral),
+            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(&Periodicidade::Semestral),
             6.0
         );
         assert_eq!(
-            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(Periodicidade::Anual),
+            Periodicidade::Mensal.quantidade_periodos_1_periodicidade(&Periodicidade::Anual),
             12.0
         );
     }

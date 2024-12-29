@@ -24,4 +24,5 @@ pub trait JurosInterface {
     fn periodicidade(&self) -> &Periodicidade;
     fn taxa_juros(&self, t: u16) -> f64;
     fn taxa_desconto(&self, t: u16) -> f64;
+    fn alterar_periodicidade(&self, nova_periodicidade: Periodicidade) -> Self;
 }
